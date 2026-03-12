@@ -1,72 +1,35 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-// ═══════════════════════════════════════════════════════════════
-// FOREX MACRO INTELLIGENCE v3.0 — 12. OŽUJKA 2026.
-// Dodani: PMI (leading), labor market (coincident), economic cycle
-// ═══════════════════════════════════════════════════════════════
-
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD"];
-
-// ECONOMIC CYCLE STAGES
-// Expansion: PMI>50, UR padajuća, rast plača snažan
-// Peak: PMI visok ali pada, UR na minimumu, inflacija raste
-// Slowdown: PMI pada, UR raste, rast usporava
-// Contraction: PMI<50, UR naglo raste, deflatorni pritisci
-// Recovery: PMI raste iz dna, UR stabilizira
 
 const MACRO_CONTEXT = {
   USD: {
-    // CB & Macro
     rate: 3.625, inflation: 2.4, core_inflation: 2.5, gdp: 2.8,
     trend: "on hold", cb_tone: "neutral", central_bank: "Fed", next_meeting: "18. ožujka",
-    // LABOR MARKET — Feb 2026 (BLS, 6.3.2026.)
     labor: {
-      nfp: -92,           // NFP Feb 2026: -92K (šok! očekivano +50K)
-      nfp_prev: 126,      // Jan 2026: 126K (revidirano dolje sa 130K)
-      adp: 63,            // ADP Feb: +63K (beat, očekivano 50K)
-      unemployment: 4.4,  // UR Feb: 4.4% (↑ od 4.3% u jan)
-      u6: 7.9,            // U-6 šira mjera nezaposlenosti
-      wage_growth: 3.8,   // Prosječna satnica YoY Feb
-      participation: 62.0, // Labor force participation rate (najniže od prosinca 2021!)
-      trend: "deteriorating", // Opći trend: pogoršanje
+      nfp: -92, nfp_prev: 126, adp: 63, unemployment: 4.4, u6: 7.9,
+      wage_growth: 3.8, participation: 62.0, trend: "deteriorating",
       notes: "ŠOKANTNO: -92K Feb (3. pad u 5 mj.). UR na 4.4%, najblize 4-god. vrhu. Fed rez pomaknut na srpanj. Participacija 62% — najniže od XII 2021."
     },
-    // PMI — Feb 2026
     pmi: {
-      manufacturing: 52.4,  // ISM Mfg: 52.4 (2. mj. ekspanzije, 3. u 40 mj.!)
-      services: 56.1,       // ISM Services: 56.1 — NAJVIŠE od VII 2022!
-      composite: 51.6,      // S&P Global Composite: pao (tarife, vremenske prilike)
-      prices_index: 70.5,   // ISM Mfg Prices: 70.5 — EKSPLOZIJA! Najviše od VI 2022
-      new_orders: 55.8,     // New orders u ekspanziji
-      employment_pmi: 48.8, // PMI Employment: još u kontrakciji
-      trend: "mixed",       // Rast usporava u comp, ali ISM services jaki
+      manufacturing: 52.4, services: 56.1, composite: 51.6, prices_index: 70.5,
+      new_orders: 55.8, employment_pmi: 48.8, trend: "mixed",
       notes: "Dihotomija: ISM Services na max od 2022, ali S&P Composite pao zbog tarifa i vremena. CRVENA ZASTAVICA: Prices index 70.5 = inflacijski pritisak dolazi!"
     },
-    // ECONOMIC CYCLE
-    cycle: "peak_slowdown", // Usporavanje s vrha, labor market slabi
+    cycle: "peak_slowdown",
     cycle_note: "US na prekretnici: Services jaki, Manufacturing oporavak, ali labor market se lomi. NFP -92K + UR 4.4% = Fed ne može hike, ali ni rezati dok Iran drži inflaciju."
   },
   EUR: {
     rate: 2.0, inflation: 2.2, core_inflation: 2.3, gdp: 0.4,
     trend: "on hold", cb_tone: "neutral", central_bank: "ECB", next_meeting: "19. ožujka",
     labor: {
-      nfp: null,
-      adp: null,
-      unemployment: 6.1,   // Eurozone UR Jan 2026: 6.1% — REKORDNI MINIMUM! (↓ od 6.2%)
-      u6: null,
-      wage_growth: 4.1,    // EA wage growth Q4 2025
-      participation: null,
+      nfp: null, adp: null, unemployment: 6.1, u6: null, wage_growth: 4.1, participation: null,
       trend: "stable_improving",
       notes: "EUR labor market na rekordnom minimumu (6.1% Jan, Eurostat 4.3.2026). Tržište rada podupire potrošnju ali PMI zapošljavanje slabo (49.9 u jan)."
     },
     pmi: {
-      manufacturing: 47.6,  // HCOB EA Mfg Feb: kontrakcija (Njemačka vuče dolje)
-      services: 50.6,       // EA Services: tek iznad 50
-      composite: 50.2,      // Kompozit: jedva u ekspanziji
-      prices_index: 58.0,   // Cijene rastu (Iran efekt)
-      new_orders: 48.5,
-      employment_pmi: 49.9, // Zapošljavanje blago pada
-      trend: "weak_recovery",
+      manufacturing: 47.6, services: 50.6, composite: 50.2, prices_index: 58.0,
+      new_orders: 48.5, employment_pmi: 49.9, trend: "weak_recovery",
       notes: "Eurozona jedva u ekspanziji. Njemačka vleče dolje (Mfg 46.5). Francuska i Italija bolje. Iran = energetski šok koji može ubiti ionako slabi rast."
     },
     cycle: "recovery_fragile",
@@ -76,23 +39,13 @@ const MACRO_CONTEXT = {
     rate: 3.75, inflation: 3.0, core_inflation: 3.2, gdp: 0.1,
     trend: "easing", cb_tone: "dovish", central_bank: "BoE", next_meeting: "19. ožujka",
     labor: {
-      nfp: null,
-      adp: null,
-      unemployment: 4.4,   // UK UR Dec 2025: 4.4% (raste)
-      u6: null,
-      wage_growth: 5.9,    // UK wages ex bonus YoY (još visoke!)
-      participation: 62.5,
+      nfp: null, adp: null, unemployment: 4.4, u6: null, wage_growth: 5.9, participation: 62.5,
       trend: "deteriorating",
       notes: "UK tržište rada slabi: UR raste, firme smanjuju zapošljavanje (PMI Employment negativan). Ali plaće 5.9% YoY — stagflacijska klopka za BoE."
     },
     pmi: {
-      manufacturing: 46.9, // UK Mfg Feb: kontrakcija
-      services: 53.8,      // UK Services: solidno! 22-mj. visina
-      composite: 53.1,     // Composite: Feb na 22-mj. VISOKOJ!
-      prices_index: 62.0,
-      new_orders: 54.2,
-      employment_pmi: 47.5, // Zapošljavanje pada!
-      trend: "services_led_growth",
+      manufacturing: 46.9, services: 53.8, composite: 53.1, prices_index: 62.0,
+      new_orders: 54.2, employment_pmi: 47.5, trend: "services_led_growth",
       notes: "UK paradoks: Composite PMI na 22-mj. visini (services!), ali manufacturing u kontrakciji i zapošljavanje pada. Inflacija 3% + UR raste = stagflacija."
     },
     cycle: "stagflation",
@@ -102,23 +55,13 @@ const MACRO_CONTEXT = {
     rate: 0.75, inflation: 2.2, core_inflation: 2.0, gdp: 0.4,
     trend: "hawkish", cb_tone: "hawkish", central_bank: "BoJ", next_meeting: "Kraj ožujka",
     labor: {
-      nfp: null,
-      adp: null,
-      unemployment: 2.6,  // Japan UR: 2.6% (praktički puna zaposlenost!)
-      u6: null,
-      wage_growth: 3.1,   // Japan plaće rastu (BoJ uvjet za hike ispunjen)
-      participation: 63.8,
+      nfp: null, adp: null, unemployment: 2.6, u6: null, wage_growth: 3.1, participation: 63.8,
       trend: "tight_labor_market",
       notes: "Japan: UR 2.6% = praktički puna zaposlenost. Plaće rastu 3.1% — BoJ uvjet za normalizaciju politike ispunjen. Snažno tržište rada podupire hiking cycle."
     },
     pmi: {
-      manufacturing: 49.0, // Japan Mfg Feb: blago u kontrakciji
-      services: 53.7,      // Japan Services: 21-mj. visina!
-      composite: 52.8,     // Composite: 33-mj. VISINA u veljači!
-      prices_index: 55.0,
-      new_orders: 52.5,
-      employment_pmi: 51.8, // Zapošljavanje raste!
-      trend: "strong_expansion",
+      manufacturing: 49.0, services: 53.7, composite: 52.8, prices_index: 55.0,
+      new_orders: 52.5, employment_pmi: 51.8, trend: "strong_expansion",
       notes: "Japan na 33-mj. PMI visokoj! Services na 21-mj. max. Puna zaposlenost + plaće rastu + PMI jak = BoJ hike preduvjeti ispunjeni. Carry trade unwind ubrzava."
     },
     cycle: "early_expansion",
@@ -128,22 +71,13 @@ const MACRO_CONTEXT = {
     rate: 0.0, inflation: 0.4, core_inflation: 0.6, gdp: 0.8,
     trend: "on hold", cb_tone: "neutral", central_bank: "SNB", next_meeting: "26. ožujka",
     labor: {
-      nfp: null, adp: null,
-      unemployment: 2.8,   // CH UR: stabilna i niska
-      u6: null,
-      wage_growth: 1.2,    // Niske inflacije = niske plaće
-      participation: 68.5,
+      nfp: null, adp: null, unemployment: 2.8, u6: null, wage_growth: 1.2, participation: 68.5,
       trend: "stable",
       notes: "Švicarska: stabilno tržište rada, niska UR, minimalna inflacija. SNB bez potrebe za akcijom. CHF snaga dolazi isključivo od safe-haven tražnje."
     },
     pmi: {
-      manufacturing: 48.5, // CH Mfg: blago u kontrakciji
-      services: 51.5,
-      composite: 50.8,
-      prices_index: 45.0,  // Deflatorni pritisci!
-      new_orders: 49.5,
-      employment_pmi: 50.2,
-      trend: "neutral",
+      manufacturing: 48.5, services: 51.5, composite: 50.8, prices_index: 45.0,
+      new_orders: 49.5, employment_pmi: 50.2, trend: "neutral",
       notes: "Švicarska PMI neutralna. Manufacturing blago u kontrakciji, services stabil. Nema inflacijskih pritisaka. CHF = safe haven play, ne fundamentalni play."
     },
     cycle: "neutral_haven",
@@ -153,22 +87,13 @@ const MACRO_CONTEXT = {
     rate: 4.1, inflation: 3.2, core_inflation: 3.1, gdp: 1.5,
     trend: "uncertain", cb_tone: "hawkish", central_bank: "RBA", next_meeting: "Travanj",
     labor: {
-      nfp: null, adp: null,
-      unemployment: 4.0,    // AU UR: 4.0% (relativno niska)
-      u6: null,
-      wage_growth: 3.3,     // Wage growth usporava
-      participation: 67.1,
+      nfp: null, adp: null, unemployment: 4.0, u6: null, wage_growth: 3.3, participation: 67.1,
       trend: "stable",
       notes: "Australia tržište rada solidno (UR 4%), ali inflacija 3.2% iznad cilja. RBA hikao u veljači 2026 — tržišta expectaju +39bp više do kraja 2026."
     },
     pmi: {
-      manufacturing: 50.5,  // AU Mfg: jedva u ekspanziji
-      services: 52.8,       // AU Services: solidno
-      composite: 52.1,      // Feb: ubrzanje (S&P Global: growth accelerated)
-      prices_index: 60.0,
-      new_orders: 53.0,
-      employment_pmi: 51.5,
-      trend: "mild_expansion",
+      manufacturing: 50.5, services: 52.8, composite: 52.1, prices_index: 60.0,
+      new_orders: 53.0, employment_pmi: 51.5, trend: "mild_expansion",
       notes: "Australia PMI ubrzava u februaru (S&P Global). Ali: Iran = nafta gore = uvozni inflacijski šok (Australija uvozi naftu!). Kina slaba = downside za rudne sirovine."
     },
     cycle: "late_expansion",
@@ -178,23 +103,14 @@ const MACRO_CONTEXT = {
     rate: 2.25, inflation: 2.2, core_inflation: 2.1, gdp: 1.1,
     trend: "on hold", cb_tone: "neutral", central_bank: "BoC", next_meeting: "Travanj",
     labor: {
-      nfp: null, adp: null,
-      unemployment: 6.5,    // CA UR Jan 2026: 6.5% (palo s 6.7% u prosincu!)
-      u6: null,
-      wage_growth: 3.8,
-      participation: 65.0,
+      nfp: null, adp: null, unemployment: 6.5, u6: null, wage_growth: 3.8, participation: 65.0,
       trend: "improving",
       notes: "Canada labor market iznenađenje: UR pala na 6.5% u jan (OECD). Ali USMCA tarife prijete gubicima radnih mjesta u industriji. Iran = nafta gore = CAD bullish."
     },
     pmi: {
-      manufacturing: 52.8,  // Canada Mfg Feb: RASTE — najviše od jan 2025!
-      services: 51.5,
-      composite: 52.2,
-      prices_index: 58.0,
-      new_orders: 54.0,
-      employment_pmi: 50.8,
-      trend: "improving",
-      notes: "Canada Mfg PMI na 13-mj. visokoj! (S&P Global: 'positive month for Canada's manufacturing'). Kontradikcija: jak PMI ali USMCA tarife prijete. Iran = bullish CAD."
+      manufacturing: 52.8, services: 51.5, composite: 52.2, prices_index: 58.0,
+      new_orders: 54.0, employment_pmi: 50.8, trend: "improving",
+      notes: "Canada Mfg PMI na 13-mj. visokoj! Kontradikcija: jak PMI ali USMCA tarife prijete. Iran = bullish CAD."
     },
     cycle: "mid_expansion",
     cycle_note: "CAD složena slika: PMI raste, nafta gore (Iran = bullish), ali USMCA tarife = structural downside. BoC čeka što će biti s tarifama prije iduće odluke."
@@ -203,22 +119,13 @@ const MACRO_CONTEXT = {
     rate: 2.25, inflation: 2.8, core_inflation: 2.6, gdp: 0.6,
     trend: "on hold", cb_tone: "neutral", central_bank: "RBNZ", next_meeting: "Travanj",
     labor: {
-      nfp: null, adp: null,
-      unemployment: 5.1,    // NZ UR Q4 2025: 5.1% (raste)
-      u6: null,
-      wage_growth: 3.2,
-      participation: 71.5,
+      nfp: null, adp: null, unemployment: 5.1, u6: null, wage_growth: 3.2, participation: 71.5,
       trend: "deteriorating",
       notes: "NZ tržište rada slabi: UR 5.1% u Q4 2025 (raste). Inflacija 2.8% iznad cilja. RBNZ drži — tržišta expectaju +27bp do XII 2026 ali bez jasnog smjera."
     },
     pmi: {
-      manufacturing: 48.5, // NZ Mfg: kontrakcija
-      services: 49.8,      // NZ Services: na rubu kontrakcije
-      composite: 49.2,     // Kompozit u kontrakciji!
-      prices_index: 55.0,
-      new_orders: 48.0,
-      employment_pmi: 48.2,
-      trend: "contraction",
+      manufacturing: 48.5, services: 49.8, composite: 49.2, prices_index: 55.0,
+      new_orders: 48.0, employment_pmi: 48.2, trend: "contraction",
       notes: "NZD crvene zastavice: PMI Composite u kontrakciji! Slab rast + inflacija iznad cilja + rast UR. Kina slabost = direktan udar. Iran = uvoznik nafte → inflacijski šok."
     },
     cycle: "slowdown",
@@ -226,7 +133,6 @@ const MACRO_CONTEXT = {
   },
 };
 
-// GEOPOLITICAL EVENTS
 const GEOPOLITICAL_EVENTS = [
   { event: "US-Izrael napad na Iran — nafta $100+, inflacijski šok u ožujku", bull: ["CAD", "USD"], bear: ["EUR", "NZD", "AUD", "GBP"], severity: "critical", weight: 20 },
   { event: "Iran: CB rezovi odgođeni — Fed rez pomaknut na srpanj (CME FedWatch)", bull: ["USD"], bear: ["EUR", "GBP", "NZD"], severity: "high", weight: 15 },
@@ -237,7 +143,6 @@ const GEOPOLITICAL_EVENTS = [
   { event: "Kina PMI ispod očekivanja — slabost traje", bull: [], bear: ["AUD", "NZD"], severity: "medium", weight: 8 },
 ];
 
-// CYCLE PHASE DISPLAY CONFIG
 const CYCLE_CONFIG = {
   "expansion": { label: "EKSPANZIJA", color: "#00e87a", icon: "▲" },
   "early_expansion": { label: "RANA EKSPANZIJA", color: "#00cc66", icon: "▲▲" },
@@ -254,16 +159,10 @@ const CYCLE_CONFIG = {
 function computeCurrencyScore(currency) {
   const m = MACRO_CONTEXT[currency];
   let score = 50;
-
-  // 1. KAMATNE STOPE — 18pt
   const avgRate = 2.1;
   score += Math.max(-14, Math.min(18, (m.rate - avgRate) * 2.2));
-
-  // 2. CB TON — 15pt
   const toneMap = { "hawkish": 14, "on hold": 0, "neutral": 0, "easing": -8, "dovish": -11, "uncertain": -2 };
   score += (toneMap[m.cb_tone] || 0);
-
-  // 3. PMI — LEADING INDICATOR — 15pt
   const pmi = m.pmi;
   const compPMI = pmi.composite || (pmi.manufacturing * 0.3 + pmi.services * 0.7);
   if (compPMI > 54) score += 12;
@@ -271,13 +170,10 @@ function computeCurrencyScore(currency) {
   else if (compPMI > 50) score += 3;
   else if (compPMI > 48) score -= 5;
   else score -= 10;
-  // PMI trend signal
   if (pmi.trend === "strong_expansion") score += 5;
   else if (pmi.trend === "services_led_growth" || pmi.trend === "mild_expansion") score += 2;
   else if (pmi.trend === "contraction") score -= 8;
   else if (pmi.trend === "weak_recovery") score -= 2;
-
-  // 4. LABOR MARKET — COINCIDENT INDICATOR — 12pt
   const lab = m.labor;
   const ur = lab.unemployment;
   if (ur < 3.5) score += 10;
@@ -288,32 +184,23 @@ function computeCurrencyScore(currency) {
   if (lab.trend === "deteriorating") score -= 6;
   else if (lab.trend === "tight_labor_market") score += 5;
   else if (lab.trend === "improving") score += 3;
-  // US-specific: NFP šok
   if (currency === "USD" && m.labor.nfp < 0) score -= 5;
-  // Wage growth signal
   if (lab.wage_growth > 4 && m.cb_tone === "hawkish") score += 3;
-
-  // 5. ECONOMIC CYCLE — 10pt
   const cycleScore = {
     "early_expansion": 10, "mid_expansion": 7, "expansion": 8, "late_expansion": 4,
     "peak_slowdown": -3, "recovery_fragile": 2, "slowdown": -6,
     "stagflation": -10, "contraction": -12, "neutral_haven": 0
   };
   score += (cycleScore[m.cycle] || 0);
-
-  // 6. INFLACIJA — 8pt
   if (m.inflation <= 2.0) score += 3;
   else if (m.inflation <= 2.5) score += 1;
   else if (m.inflation <= 3.5) score -= 3;
   else score -= 8;
-
-  // 7. GEOPOLITIKA — 40pt dominantan faktor
   GEOPOLITICAL_EVENTS.forEach(ev => {
-    const m = ev.severity === "critical" ? 1.5 : ev.severity === "high" ? 1.0 : 0.6;
-    if (ev.bull?.includes(currency)) score += ev.weight * m * 0.45;
-    if (ev.bear?.includes(currency)) score -= ev.weight * m * 0.45;
+    const mult = ev.severity === "critical" ? 1.5 : ev.severity === "high" ? 1.0 : 0.6;
+    if (ev.bull?.includes(currency)) score += ev.weight * mult * 0.45;
+    if (ev.bear?.includes(currency)) score -= ev.weight * mult * 0.45;
   });
-
   return Math.max(8, Math.min(95, Math.round(score)));
 }
 
@@ -370,9 +257,6 @@ Format (UVIJEK HRVATSKI):
 
 Budi koncizan i direktan. Koristi podatke, ne filozofiju.`;
 
-// ═══════════════════════════════════════════════════════════════
-// NEWS SYSTEM PROMPT — Claude traži vijesti i vraća JSON impact
-// ═══════════════════════════════════════════════════════════════
 const NEWS_SYSTEM_PROMPT = `Ti si forex geopolitički analitičar. Pretraži web za ZADNJE vijesti (zadnjih 24-48 sati) o:
 1. Iran-US-Izrael konflikt i nafta
 2. Fed, ECB, BoE, BoJ, RBA, BoC odluke ili govori
@@ -419,11 +303,11 @@ export default function ForexDashboard() {
     setScores(c);
   }, []);
 
-  // Fetch live news i score adjustments
+  // ═══ FETCH LIVE NEWS — koristi /api/analyze (server proxy) ═══
   const fetchLiveNews = useCallback(async () => {
     setNewsLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -435,18 +319,15 @@ export default function ForexDashboard() {
         }),
       });
       const data = await res.json();
-      // Extract text from response (may have tool_use blocks)
       const textBlock = data.content?.find(b => b.type === "text");
       if (textBlock?.text) {
         const raw = textBlock.text.replace(/```json|```/g, "").trim();
-        // Find JSON in response
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           setNewsItems(parsed.news || []);
           setNewsAnalysis(parsed);
           setNewsLastFetch(new Date());
-          // Apply score adjustments
           const adj = {};
           (parsed.news || []).forEach(item => {
             if (item.score_adjustments) {
@@ -456,7 +337,6 @@ export default function ForexDashboard() {
             }
           });
           setLiveAdjustments(adj);
-          // Update scores with adjustments
           const c = {};
           CURRENCIES.forEach(cur => {
             const base = computeCurrencyScore(cur);
@@ -471,6 +351,7 @@ export default function ForexDashboard() {
     setNewsLoading(false);
   }, []);
 
+  // ═══ ASK AI — koristi /api/analyze (server proxy) ═══
   const askAI = useCallback(async (question) => {
     setAiLoading(true);
     setAiResponse("");
@@ -480,17 +361,21 @@ export default function ForexDashboard() {
       return `${c}: score=${computeCurrencyScore(c)}, rate=${m.rate}%, CPI=${m.inflation}%, PMI_comp=${m.pmi.composite||'n/a'}, PMI_svc=${m.pmi.services}, PMI_mfg=${m.pmi.manufacturing}, UR=${m.labor.unemployment}%, cb=${m.cb_tone}, cycle=${m.cycle}`;
     }).join("\n");
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 1000,
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
           system: SYSTEM_PROMPT,
           messages: [{ role: "user", content: `VALUTNI PROFILI:\n${ctx}\n\nPITANJE: ${question}` }],
         }),
       });
       const data = await res.json();
       setAiResponse(data.content?.map(b => b.text || "").join("") || "Greška.");
-    } catch { setAiResponse("Greška pri pozivu AI."); }
+    } catch {
+      setAiResponse("Greška pri pozivu AI.");
+    }
     setAiLoading(false);
   }, []);
 
@@ -580,13 +465,9 @@ export default function ForexDashboard() {
                     <div style={{ background: "#030710", height: "3px", borderRadius: "2px", marginBottom: "8px" }}>
                       <div style={{ height: "100%", width: `${score}%`, background: `linear-gradient(90deg, ${signal.color}55, ${signal.color})`, borderRadius: "2px", transition: "width 1.2s ease" }} />
                     </div>
-
-                    {/* Cycle badge */}
                     <div style={{ background: cyc.color + "15", border: `1px solid ${cyc.color}33`, borderRadius: "2px", padding: "3px 8px", marginBottom: "8px", display: "inline-block" }}>
                       <span style={{ color: cyc.color, fontSize: "15px", letterSpacing: "1px" }}>{cyc.icon} {cyc.label}</span>
                     </div>
-
-                    {/* Key indicators grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "14px", marginBottom: "7px" }}>
                       {[
                         ["RATE", `${m.rate}%`, "#7aaabb"],
@@ -614,7 +495,7 @@ export default function ForexDashboard() {
         {/* ═══ CYCLE ═══ */}
         {activeTab === "cycle" && (
           <div>
-            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "4px", letterSpacing: "1px" }}>GDP = LAGGING (mjeri prošlost) · PMI = LEADING (ankete buduće namjere) · LABOR = COINCIDENT (sadašnje stanje)</div>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "4px", letterSpacing: "1px" }}>GDP = LAGGING · PMI = LEADING · LABOR = COINCIDENT</div>
             <div style={{ background: "#040810", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "12px", marginBottom: "16px" }}>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 {["early_expansion", "mid_expansion", "late_expansion", "peak_slowdown", "slowdown", "contraction", "recovery_fragile", "stagflation", "neutral_haven"].map(stage => {
@@ -632,8 +513,6 @@ export default function ForexDashboard() {
                 })}
               </div>
             </div>
-
-            {/* Detailed cycle analysis per currency */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "14px" }}>
               {sorted.map(currency => {
                 const m = MACRO_CONTEXT[currency];
@@ -651,8 +530,6 @@ export default function ForexDashboard() {
                       </div>
                       <span style={{ color: signal.color, fontSize: "17px", fontWeight: "bold" }}>{score}</span>
                     </div>
-
-                    {/* Cycle indicators */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "8px" }}>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px" }}>
                         <div style={{ fontSize: "15px", color: "#5a8aaa", marginBottom: "2px" }}>PMI COMPOSITE</div>
@@ -667,11 +544,9 @@ export default function ForexDashboard() {
                         <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{m.labor.trend}</div>
                       </div>
                     </div>
-
                     <div style={{ fontSize: "28px", color: "#8ab8cc", lineHeight: "1.6", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
                       {m.cycle_note}
                     </div>
-
                     <button onClick={() => askAI(`Objasni ekonomski ciklus za ${currency}. Ciklus: ${m.cycle}. PMI composite: ${m.pmi.composite || 'n/a'}, UR: ${m.labor.unemployment}%, cb_tone: ${m.cb_tone}. Što to znači za forex trader?`)}
                       style={{ marginTop: "8px", background: "none", border: "1px solid #1a3a55", borderRadius: "2px", padding: "7px 14px", color: "#5a9ab8", fontSize: "15px", fontFamily: "inherit", cursor: "pointer", width: "100%", letterSpacing: "1px" }}>
                       → AI ANALIZA CIKLUSA
@@ -687,10 +562,8 @@ export default function ForexDashboard() {
         {activeTab === "labor" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>
-              COINCIDENT INDICATORS — NFP (US specifično) · ADP · UR · Wage growth · Labour force participation
+              COINCIDENT INDICATORS — NFP · ADP · UR · Wage growth · Labour force participation
             </div>
-
-            {/* US special card — most data */}
             <div style={{ background: "#0a0810", border: "1px solid #ff444422", borderLeft: "3px solid #ff4444", borderRadius: "0 3px 3px 0", padding: "14px", marginBottom: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
                 <div>
@@ -717,12 +590,8 @@ export default function ForexDashboard() {
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: "28px", color: "#8ab8cc", lineHeight: "1.6" }}>
-                {MACRO_CONTEXT.USD.labor.notes}
-              </div>
+              <div style={{ fontSize: "28px", color: "#8ab8cc", lineHeight: "1.6" }}>{MACRO_CONTEXT.USD.labor.notes}</div>
             </div>
-
-            {/* All currencies labor table */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "14px" }}>
               {CURRENCIES.filter(c => c !== "USD").map(currency => {
                 const m = MACRO_CONTEXT[currency];
@@ -774,8 +643,6 @@ export default function ForexDashboard() {
                         <span style={{ color: PMI_COLOR(comp), fontSize: "28px", letterSpacing: "1px" }}>{pmi.trend.toUpperCase().replace(/_/g, " ")}</span>
                       </div>
                     </div>
-
-                    {/* PMI gauges */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", marginBottom: "8px" }}>
                       {[
                         { l: "COMPOSITE", v: comp.toFixed(1) },
@@ -794,8 +661,6 @@ export default function ForexDashboard() {
                         </div>
                       ))}
                     </div>
-
-                    {/* Sub-indices */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "7px" }}>
                       <div style={{ background: "#040810", padding: "9px 14px", borderRadius: "2px" }}>
                         <span style={{ fontSize: "15px", color: "#5a8aaa" }}>CIJENE: </span>
@@ -807,7 +672,6 @@ export default function ForexDashboard() {
                         <span style={{ fontSize: "17px", color: PMI_COLOR(pmi.employment_pmi) }}>{pmi.employment_pmi}</span>
                       </div>
                     </div>
-
                     <div style={{ fontSize: "15px", color: "#6a9ab0", lineHeight: "1.5", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
                       {pmi.notes}
                     </div>
@@ -830,8 +694,6 @@ export default function ForexDashboard() {
                 {newsLoading ? "⟳ DOHVAĆAM..." : "↻ OSVJEŽI VIJESTI"}
               </button>
             </div>
-
-            {/* Overall sentiment bar */}
             {newsAnalysis && (
               <div style={{ background: "#070d16", border: `1px solid ${newsAnalysis.overall_sentiment === "risk_off" ? "#ff444433" : newsAnalysis.overall_sentiment === "risk_on" ? "#00e87a33" : "#1a3a5533"}`, borderRadius: "3px", padding: "12px 14px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
@@ -841,7 +703,6 @@ export default function ForexDashboard() {
                   </div>
                   <div style={{ fontSize: "28px", color: "#7ab0c8", marginTop: "4px" }}>{newsAnalysis.key_theme}</div>
                 </div>
-                {/* Live adjustments summary */}
                 <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end" }}>
                   {Object.entries(liveAdjustments).filter(([,v]) => v !== 0).sort((a,b) => b[1]-a[1]).map(([cur, adj]) => (
                     <div key={cur} style={{ background: adj > 0 ? "#00e87a15" : "#ff444415", border: `1px solid ${adj > 0 ? "#00e87a33" : "#ff444433"}`, borderRadius: "2px", padding: "3px 7px", textAlign: "center" }}>
@@ -852,16 +713,12 @@ export default function ForexDashboard() {
                 </div>
               </div>
             )}
-
-            {/* News loading state */}
             {newsLoading && (
               <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
                 <div style={{ color: "#00e87a", fontSize: "17px", marginBottom: "8px", animation: "pulse 1s infinite" }}>⟳ Claude pretražuje web za zadnje vijesti...</div>
                 <div style={{ color: "#5a8aaa", fontSize: "15px" }}>Tražim: Iran, Fed, ECB, BoJ, geopolitika, macro podaci</div>
               </div>
             )}
-
-            {/* No news yet */}
             {!newsLoading && newsItems.length === 0 && (
               <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
                 <div style={{ color: "#0c1c2c", fontSize: "17px", marginBottom: "8px" }}>◆</div>
@@ -871,8 +728,6 @@ export default function ForexDashboard() {
                 </button>
               </div>
             )}
-
-            {/* News cards */}
             {!newsLoading && newsItems.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {newsItems.map((item, i) => {
