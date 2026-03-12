@@ -511,11 +511,11 @@ export default function ForexDashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#00e87a", boxShadow: "0 0 10px #00e87a", animation: "pulse 2s infinite" }} />
           <span style={{ color: "#00e87a", fontSize: "28px", letterSpacing: "3px", fontWeight: "bold" }}>FOREX MACRO INTELLIGENCE</span>
-          <span style={{ color: "#1a3a55", fontSize: "15px" }}>v4.0 · LIVE NEWS + PMI + LABOR + CYCLE</span>
+          <span style={{ color: "#5a8aaa", fontSize: "15px" }}>v4.0 · LIVE NEWS + PMI + LABOR + CYCLE</span>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ color: "#ff7733", fontSize: "15px", letterSpacing: "1px" }}>⚠ IRAN RAT · NFP -92K · ISM PRICES 70.5</div>
-          <div style={{ color: "#1a3a55", fontSize: "15px", marginTop: "2px" }}>12.3.2026. | US UR 4.4% | JP UR 2.6% | EA UR 6.1% rec.min</div>
+          <div style={{ color: "#5a8aaa", fontSize: "15px", marginTop: "2px" }}>12.3.2026. | US UR 4.4% | JP UR 2.6% | EA UR 6.1% rec.min</div>
         </div>
       </div>
 
@@ -525,9 +525,9 @@ export default function ForexDashboard() {
           const sig = getPairSignal(p.base, p.quote, scores);
           return (
             <div key={p.pair} onClick={() => handlePairClick(p)} style={{ display: "flex", gap: "12px", alignItems: "center", flexShrink: 0, cursor: "pointer" }}>
-              <span style={{ color: "#1e3a55", fontSize: "15px" }}>{p.pair}</span>
+              <span style={{ color: "#5a8aaa", fontSize: "15px" }}>{p.pair}</span>
               <span style={{ color: sig.color, fontSize: "15px", fontWeight: "bold" }}>{sig.label}</span>
-              <span style={{ color: "#0f2235", fontSize: "15px" }}>{sig.confidence}%</span>
+              <span style={{ color: "#4a7a99", fontSize: "15px" }}>{sig.confidence}%</span>
             </div>
           );
         })}
@@ -555,7 +555,7 @@ export default function ForexDashboard() {
         {/* ═══ OVERVIEW ═══ */}
         {activeTab === "overview" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "16px", letterSpacing: "1px" }}>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "16px", letterSpacing: "1px" }}>
               SCORE: kamate 18pt + CB ton 15pt + PMI 15pt + labor 12pt + ciklus 10pt + inflacija 8pt + geopolitika 40pt
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "12px" }}>
@@ -570,7 +570,7 @@ export default function ForexDashboard() {
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div>
                         <div style={{ fontSize: "28px", fontWeight: "bold" }}>{currency}</div>
-                        <div style={{ fontSize: "15px", color: "#1e3a55" }}>{m.central_bank} · {m.next_meeting}</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{m.central_bank} · {m.next_meeting}</div>
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: "26px", fontWeight: "bold", color: signal.color }}>{score}</div>
@@ -596,12 +596,12 @@ export default function ForexDashboard() {
                         ["UR", `${m.labor.unemployment}%`, UR_COLOR(m.labor.unemployment)],
                       ].map(([l, v, c]) => (
                         <div key={l} style={{ textAlign: "center", background: "#030710", padding: "4px 2px", borderRadius: "2px" }}>
-                          <div style={{ fontSize: "17px", color: "#1a3a55", marginBottom: "1px" }}>{l}</div>
+                          <div style={{ fontSize: "17px", color: "#5a8aaa", marginBottom: "1px" }}>{l}</div>
                           <div style={{ fontSize: "17px", color: c }}>{v}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{ fontSize: "15px", color: "#1e3a55", borderTop: "1px solid #09182a", paddingTop: "7px", lineHeight: "1.5" }}>
+                    <div style={{ fontSize: "15px", color: "#5a8aaa", borderTop: "1px solid #09182a", paddingTop: "7px", lineHeight: "1.5" }}>
                       {m.cycle_note}
                     </div>
                   </div>
@@ -614,7 +614,7 @@ export default function ForexDashboard() {
         {/* ═══ CYCLE ═══ */}
         {activeTab === "cycle" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "4px", letterSpacing: "1px" }}>GDP = LAGGING (mjeri prošlost) · PMI = LEADING (ankete buduće namjere) · LABOR = COINCIDENT (sadašnje stanje)</div>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "4px", letterSpacing: "1px" }}>GDP = LAGGING (mjeri prošlost) · PMI = LEADING (ankete buduće namjere) · LABOR = COINCIDENT (sadašnje stanje)</div>
             <div style={{ background: "#040810", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "12px", marginBottom: "16px" }}>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 {["early_expansion", "mid_expansion", "late_expansion", "peak_slowdown", "slowdown", "contraction", "recovery_fragile", "stagflation", "neutral_haven"].map(stage => {
@@ -655,25 +655,25 @@ export default function ForexDashboard() {
                     {/* Cycle indicators */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "8px" }}>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px" }}>
-                        <div style={{ fontSize: "15px", color: "#1a3a55", marginBottom: "2px" }}>PMI COMPOSITE</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa", marginBottom: "2px" }}>PMI COMPOSITE</div>
                         <div style={{ fontSize: "17px", color: PMI_COLOR(m.pmi.composite || (m.pmi.manufacturing * 0.3 + m.pmi.services * 0.7)) }}>
                           {m.pmi.composite || ((m.pmi.manufacturing * 0.3 + m.pmi.services * 0.7)).toFixed(1)}
                         </div>
-                        <div style={{ fontSize: "15px", color: "#1a3a55" }}>{m.pmi.trend}</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{m.pmi.trend}</div>
                       </div>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px" }}>
-                        <div style={{ fontSize: "15px", color: "#1a3a55", marginBottom: "2px" }}>NEZAPOSLENOST</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa", marginBottom: "2px" }}>NEZAPOSLENOST</div>
                         <div style={{ fontSize: "17px", color: UR_COLOR(m.labor.unemployment) }}>{m.labor.unemployment}%</div>
-                        <div style={{ fontSize: "15px", color: "#1a3a55" }}>{m.labor.trend}</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{m.labor.trend}</div>
                       </div>
                     </div>
 
-                    <div style={{ fontSize: "28px", color: "#5a7a90", lineHeight: "1.6", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
+                    <div style={{ fontSize: "28px", color: "#8ab8cc", lineHeight: "1.6", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
                       {m.cycle_note}
                     </div>
 
                     <button onClick={() => askAI(`Objasni ekonomski ciklus za ${currency}. Ciklus: ${m.cycle}. PMI composite: ${m.pmi.composite || 'n/a'}, UR: ${m.labor.unemployment}%, cb_tone: ${m.cb_tone}. Što to znači za forex trader?`)}
-                      style={{ marginTop: "8px", background: "none", border: "1px solid #1a3a55", borderRadius: "2px", padding: "7px 14px", color: "#2a5a7a", fontSize: "15px", fontFamily: "inherit", cursor: "pointer", width: "100%", letterSpacing: "1px" }}>
+                      style={{ marginTop: "8px", background: "none", border: "1px solid #1a3a55", borderRadius: "2px", padding: "7px 14px", color: "#5a9ab8", fontSize: "15px", fontFamily: "inherit", cursor: "pointer", width: "100%", letterSpacing: "1px" }}>
                       → AI ANALIZA CIKLUSA
                     </button>
                   </div>
@@ -686,7 +686,7 @@ export default function ForexDashboard() {
         {/* ═══ LABOR MARKET ═══ */}
         {activeTab === "labor" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>
               COINCIDENT INDICATORS — NFP (US specifično) · ADP · UR · Wage growth · Labour force participation
             </div>
 
@@ -711,13 +711,13 @@ export default function ForexDashboard() {
                   { l: "DUGOTR.NEZ.", v: "25.7tj", note: "max od XII 2021", c: "#cc2222" },
                 ].map(item => (
                   <div key={item.l} style={{ background: "#040810", padding: "12px", borderRadius: "2px" }}>
-                    <div style={{ fontSize: "15px", color: "#1a3a55" }}>{item.l}</div>
+                    <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{item.l}</div>
                     <div style={{ fontSize: "17px", color: item.c, fontWeight: "bold" }}>{item.v}</div>
-                    <div style={{ fontSize: "15px", color: "#2a4a65" }}>{item.note}</div>
+                    <div style={{ fontSize: "15px", color: "#6a9ab0" }}>{item.note}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: "28px", color: "#5a7a90", lineHeight: "1.6" }}>
+              <div style={{ fontSize: "28px", color: "#8ab8cc", lineHeight: "1.6" }}>
                 {MACRO_CONTEXT.USD.labor.notes}
               </div>
             </div>
@@ -735,19 +735,19 @@ export default function ForexDashboard() {
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", marginBottom: "8px" }}>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px", textAlign: "center" }}>
-                        <div style={{ fontSize: "15px", color: "#1a3a55" }}>NEZAPOSLENOST</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>NEZAPOSLENOST</div>
                         <div style={{ fontSize: "17px", color: UR_COLOR(lab.unemployment), fontWeight: "bold" }}>{lab.unemployment}%</div>
                       </div>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px", textAlign: "center" }}>
-                        <div style={{ fontSize: "15px", color: "#1a3a55" }}>PLAĆE YoY</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>PLAĆE YoY</div>
                         <div style={{ fontSize: "17px", color: lab.wage_growth > 4 ? "#ffaa22" : "#7aaabb" }}>{lab.wage_growth}%</div>
                       </div>
                       <div style={{ background: "#040810", padding: "6px", borderRadius: "2px", textAlign: "center" }}>
-                        <div style={{ fontSize: "15px", color: "#1a3a55" }}>PARTICIPACIJA</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>PARTICIPACIJA</div>
                         <div style={{ fontSize: "15px", color: "#7aaabb" }}>{lab.participation ? `${lab.participation}%` : "n/a"}</div>
                       </div>
                     </div>
-                    <div style={{ fontSize: "15px", color: "#2a4a65", lineHeight: "1.5" }}>{lab.notes}</div>
+                    <div style={{ fontSize: "15px", color: "#6a9ab0", lineHeight: "1.5" }}>{lab.notes}</div>
                   </div>
                 );
               })}
@@ -758,7 +758,7 @@ export default function ForexDashboard() {
         {/* ═══ PMI ═══ */}
         {activeTab === "pmi" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>
               LEADING INDICATORS — PMI {">"} 50 = ekspanzija · PMI {"<"} 50 = kontrakcija | Podaci: veljača 2026.
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "14px" }}>
@@ -783,7 +783,7 @@ export default function ForexDashboard() {
                         { l: "MANUFACTURING", v: pmi.manufacturing },
                       ].map(({ l, v }) => (
                         <div key={l} style={{ background: "#040810", padding: "8px 4px", borderRadius: "2px", textAlign: "center" }}>
-                          <div style={{ fontSize: "17px", color: "#1a3a55", marginBottom: "2px" }}>{l}</div>
+                          <div style={{ fontSize: "17px", color: "#5a8aaa", marginBottom: "2px" }}>{l}</div>
                           <div style={{ fontSize: "28px", fontWeight: "bold", color: PMI_COLOR(parseFloat(v)) }}>{v}</div>
                           <div style={{ background: "#030710", height: "2px", borderRadius: "1px", marginTop: "4px" }}>
                             <div style={{ height: "100%", width: `${Math.min(100, Math.max(0, (parseFloat(v) - 40) * 5))}%`, background: PMI_COLOR(parseFloat(v)), borderRadius: "1px" }} />
@@ -798,17 +798,17 @@ export default function ForexDashboard() {
                     {/* Sub-indices */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "7px" }}>
                       <div style={{ background: "#040810", padding: "9px 14px", borderRadius: "2px" }}>
-                        <span style={{ fontSize: "15px", color: "#1a3a55" }}>CIJENE: </span>
+                        <span style={{ fontSize: "15px", color: "#5a8aaa" }}>CIJENE: </span>
                         <span style={{ fontSize: "17px", color: pmi.prices_index > 60 ? "#cc2222" : pmi.prices_index > 55 ? "#ff8844" : "#7aaabb", fontWeight: "bold" }}>{pmi.prices_index}</span>
                         {pmi.prices_index > 65 && <span style={{ fontSize: "15px", color: "#cc2222" }}> ⚠ INFLACIJA!</span>}
                       </div>
                       <div style={{ background: "#040810", padding: "9px 14px", borderRadius: "2px" }}>
-                        <span style={{ fontSize: "15px", color: "#1a3a55" }}>EMPLOYMENT PMI: </span>
+                        <span style={{ fontSize: "15px", color: "#5a8aaa" }}>EMPLOYMENT PMI: </span>
                         <span style={{ fontSize: "17px", color: PMI_COLOR(pmi.employment_pmi) }}>{pmi.employment_pmi}</span>
                       </div>
                     </div>
 
-                    <div style={{ fontSize: "15px", color: "#2a4a65", lineHeight: "1.5", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
+                    <div style={{ fontSize: "15px", color: "#6a9ab0", lineHeight: "1.5", borderTop: "1px solid #09182a", paddingTop: "7px" }}>
                       {pmi.notes}
                     </div>
                   </div>
@@ -823,8 +823,8 @@ export default function ForexDashboard() {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
               <div>
-                <div style={{ color: "#1a3a55", fontSize: "15px", letterSpacing: "1px" }}>LIVE NEWS — Claude pretražuje web i računa utjecaj na valutne scoreove</div>
-                {newsLastFetch && <div style={{ color: "#1a3a55", fontSize: "15px", marginTop: "2px" }}>Zadnji fetch: {newsLastFetch.toLocaleTimeString('hr-HR')}</div>}
+                <div style={{ color: "#5a8aaa", fontSize: "15px", letterSpacing: "1px" }}>LIVE NEWS — Claude pretražuje web i računa utjecaj na valutne scoreove</div>
+                {newsLastFetch && <div style={{ color: "#5a8aaa", fontSize: "15px", marginTop: "2px" }}>Zadnji fetch: {newsLastFetch.toLocaleTimeString('hr-HR')}</div>}
               </div>
               <button onClick={fetchLiveNews} disabled={newsLoading} style={{ background: newsLoading ? "#070d16" : "#00e87a18", border: `1px solid ${newsLoading ? "#0c1c2c" : "#00e87a44"}`, borderRadius: "3px", padding: "8px 16px", color: newsLoading ? "#1e3a55" : "#00e87a", fontFamily: "inherit", fontSize: "28px", letterSpacing: "2px", cursor: newsLoading ? "wait" : "pointer" }}>
                 {newsLoading ? "⟳ DOHVAĆAM..." : "↻ OSVJEŽI VIJESTI"}
@@ -835,11 +835,11 @@ export default function ForexDashboard() {
             {newsAnalysis && (
               <div style={{ background: "#070d16", border: `1px solid ${newsAnalysis.overall_sentiment === "risk_off" ? "#ff444433" : newsAnalysis.overall_sentiment === "risk_on" ? "#00e87a33" : "#1a3a5533"}`, borderRadius: "3px", padding: "12px 14px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: "15px", color: "#1a3a55", letterSpacing: "1px", marginBottom: "3px" }}>TRŽIŠNI SENTIMENT</div>
+                  <div style={{ fontSize: "15px", color: "#5a8aaa", letterSpacing: "1px", marginBottom: "3px" }}>TRŽIŠNI SENTIMENT</div>
                   <div style={{ fontSize: "28px", color: newsAnalysis.overall_sentiment === "risk_off" ? "#ff4444" : newsAnalysis.overall_sentiment === "risk_on" ? "#00e87a" : "#7a9ab0", fontWeight: "bold", letterSpacing: "2px" }}>
                     {newsAnalysis.overall_sentiment === "risk_off" ? "⚠ RISK OFF" : newsAnalysis.overall_sentiment === "risk_on" ? "▲ RISK ON" : "→ NEUTRALNO"}
                   </div>
-                  <div style={{ fontSize: "28px", color: "#4a7a90", marginTop: "4px" }}>{newsAnalysis.key_theme}</div>
+                  <div style={{ fontSize: "28px", color: "#7ab0c8", marginTop: "4px" }}>{newsAnalysis.key_theme}</div>
                 </div>
                 {/* Live adjustments summary */}
                 <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -857,7 +857,7 @@ export default function ForexDashboard() {
             {newsLoading && (
               <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
                 <div style={{ color: "#00e87a", fontSize: "17px", marginBottom: "8px", animation: "pulse 1s infinite" }}>⟳ Claude pretražuje web za zadnje vijesti...</div>
-                <div style={{ color: "#1a3a55", fontSize: "15px" }}>Tražim: Iran, Fed, ECB, BoJ, geopolitika, macro podaci</div>
+                <div style={{ color: "#5a8aaa", fontSize: "15px" }}>Tražim: Iran, Fed, ECB, BoJ, geopolitika, macro podaci</div>
               </div>
             )}
 
@@ -865,7 +865,7 @@ export default function ForexDashboard() {
             {!newsLoading && newsItems.length === 0 && (
               <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
                 <div style={{ color: "#0c1c2c", fontSize: "17px", marginBottom: "8px" }}>◆</div>
-                <div style={{ color: "#1a3a55", fontSize: "28px", letterSpacing: "1px", marginBottom: "16px" }}>Pritisni "OSVJEŽI VIJESTI" — Claude će pretražiti web i analizirati utjecaj na valute</div>
+                <div style={{ color: "#5a8aaa", fontSize: "28px", letterSpacing: "1px", marginBottom: "16px" }}>Pritisni "OSVJEŽI VIJESTI" — Claude će pretražiti web i analizirati utjecaj na valute</div>
                 <button onClick={fetchLiveNews} style={{ background: "#00e87a18", border: "1px solid #00e87a44", borderRadius: "3px", padding: "10px 20px", color: "#00e87a", fontFamily: "inherit", fontSize: "17px", letterSpacing: "2px", cursor: "pointer" }}>
                   ↻ DOHVATI LIVE VIJESTI
                 </button>
@@ -887,20 +887,20 @@ export default function ForexDashboard() {
                           <span style={{ background: impactColor + "18", border: `1px solid ${impactColor}33`, borderRadius: "2px", padding: "1px 5px", fontSize: "15px", color: impactColor, letterSpacing: "1px" }}>{item.impact?.toUpperCase()}</span>
                         </div>
                       </div>
-                      <div style={{ fontSize: "28px", color: "#4a7a90", lineHeight: "1.5", marginBottom: "8px" }}>{item.summary}</div>
+                      <div style={{ fontSize: "28px", color: "#7ab0c8", lineHeight: "1.5", marginBottom: "8px" }}>{item.summary}</div>
                       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "6px" }}>
                         {item.currencies_up?.map(c => <span key={c} style={{ background: "#00e87a15", border: "1px solid #00e87a30", borderRadius: "2px", padding: "1px 6px", fontSize: "15px", color: "#00e87a", fontWeight: "bold" }}>↑ {c}</span>)}
                         {item.currencies_down?.map(c => <span key={c} style={{ background: "#ff444415", border: "1px solid #ff444430", borderRadius: "2px", padding: "1px 6px", fontSize: "15px", color: "#ff4444", fontWeight: "bold" }}>↓ {c}</span>)}
                       </div>
                       {item.score_adjustments && Object.keys(item.score_adjustments).length > 0 && (
                         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                          <span style={{ fontSize: "15px", color: "#1a3a55", alignSelf: "center" }}>SCORE ADJ:</span>
+                          <span style={{ fontSize: "15px", color: "#5a8aaa", alignSelf: "center" }}>SCORE ADJ:</span>
                           {Object.entries(item.score_adjustments).map(([cur, adj]) => (
                             <span key={cur} style={{ fontSize: "15px", color: adj > 0 ? "#00e87a" : "#ff4444" }}>{cur} {adj > 0 ? "+" : ""}{adj}</span>
                           ))}
                         </div>
                       )}
-                      {item.source_hint && <div style={{ fontSize: "15px", color: "#1a3a55", marginTop: "5px" }}>Izvor: {item.source_hint}</div>}
+                      {item.source_hint && <div style={{ fontSize: "15px", color: "#5a8aaa", marginTop: "5px" }}>Izvor: {item.source_hint}</div>}
                     </div>
                   );
                 })}
@@ -912,7 +912,7 @@ export default function ForexDashboard() {
         {/* ═══ PAIRS ═══ */}
         {activeTab === "pairs" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>KLIKNI PAR → AI ANALIZA (PMI + LABOR + CYCLE + GEO)</div>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "14px", letterSpacing: "1px" }}>KLIKNI PAR → AI ANALIZA (PMI + LABOR + CYCLE + GEO)</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" }}>
               {FOREX_PAIRS.map(pair => {
                 const sig = getPairSignal(pair.base, pair.quote, scores);
@@ -932,20 +932,20 @@ export default function ForexDashboard() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                       <div>
-                        <div style={{ fontSize: "15px", color: "#1e3a55" }}>{pair.base}</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{pair.base}</div>
                         <div style={{ fontSize: "26px", color: getSignal(scores[pair.base] || 50).color }}>{scores[pair.base] || 50}</div>
                         <div style={{ fontSize: "15px", color: bcyc.color }}>{bcyc.icon} {bm.cycle.replace(/_/g, " ")}</div>
                       </div>
                       <div style={{ color: "#0a1c2c", fontSize: "17px", alignSelf: "center" }}>↔</div>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: "15px", color: "#1e3a55" }}>{pair.quote}</div>
+                        <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{pair.quote}</div>
                         <div style={{ fontSize: "26px", color: getSignal(scores[pair.quote] || 50).color }}>{scores[pair.quote] || 50}</div>
                         <div style={{ fontSize: "15px", color: qcyc.color }}>{qcyc.icon} {qm.cycle.replace(/_/g, " ")}</div>
                       </div>
                     </div>
                     <div style={{ background: "#040810", borderRadius: "2px", padding: "5px", display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                      <span style={{ fontSize: "15px", color: "#1e3a55" }}>CONF: <span style={{ color: sig.color, fontWeight: "bold" }}>{sig.confidence}%</span></span>
-                      <span style={{ fontSize: "15px", color: "#1e3a55" }}>DIFF: <span style={{ color: sig.diff >= 0 ? "#00e87a" : "#e85544" }}>{sig.diff >= 0 ? "+" : ""}{sig.diff}</span></span>
+                      <span style={{ fontSize: "15px", color: "#5a8aaa" }}>CONF: <span style={{ color: sig.color, fontWeight: "bold" }}>{sig.confidence}%</span></span>
+                      <span style={{ fontSize: "15px", color: "#5a8aaa" }}>DIFF: <span style={{ color: sig.diff >= 0 ? "#00e87a" : "#e85544" }}>{sig.diff >= 0 ? "+" : ""}{sig.diff}</span></span>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                       {[pair.base, pair.quote].map(c => {
@@ -953,13 +953,13 @@ export default function ForexDashboard() {
                         const lm = MACRO_CONTEXT[c].labor;
                         return (
                           <div key={c} style={{ background: "#040810", padding: "6px", borderRadius: "2px" }}>
-                            <div style={{ fontSize: "15px", color: "#1a3a55" }}>{c}: PMI {pm.services} svc</div>
-                            <div style={{ fontSize: "15px", color: "#1a3a55" }}>UR {lm.unemployment}% · {lm.trend.split("_")[0]}</div>
+                            <div style={{ fontSize: "15px", color: "#5a8aaa" }}>{c}: PMI {pm.services} svc</div>
+                            <div style={{ fontSize: "15px", color: "#5a8aaa" }}>UR {lm.unemployment}% · {lm.trend.split("_")[0]}</div>
                           </div>
                         );
                       })}
                     </div>
-                    <div style={{ fontSize: "15px", color: "#0f2235", textAlign: "center", marginTop: "7px" }}>→ klikni za AI analizu</div>
+                    <div style={{ fontSize: "15px", color: "#4a7a99", textAlign: "center", marginTop: "7px" }}>→ klikni za AI analizu</div>
                   </div>
                 );
               })}
@@ -970,7 +970,7 @@ export default function ForexDashboard() {
         {/* ═══ AI ═══ */}
         {activeTab === "ai" && (
           <div>
-            <div style={{ color: "#1a3a55", fontSize: "15px", marginBottom: "12px", letterSpacing: "1px" }}>AI ANALIZA · PMI + LABOR + CYCLE FRAMEWORK · KONTEKST: 12.3.2026.</div>
+            <div style={{ color: "#5a8aaa", fontSize: "15px", marginBottom: "12px", letterSpacing: "1px" }}>AI ANALIZA · PMI + LABOR + CYCLE FRAMEWORK · KONTEKST: 12.3.2026.</div>
             <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
               <input value={aiQuery} onChange={e => setAiQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && aiQuery.trim() && askAI(aiQuery)}
                 placeholder="npr. Koji ciklus favorizira JPY dugoročno? Zašto je NFP -92K bearish za USD?"
@@ -991,7 +991,7 @@ export default function ForexDashboard() {
                 "Safe haven: CHF ili JPY u Iran šoku?",
               ].map(q => (
                 <button key={q} onClick={() => { setAiQuery(q); askAI(q); }}
-                  style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "2px", padding: "7px 12px", color: "#1e4a6a", fontSize: "15px", fontFamily: "inherit", cursor: "pointer", letterSpacing: "1px" }}>
+                  style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "2px", padding: "7px 12px", color: "#5a9ab8", fontSize: "15px", fontFamily: "inherit", cursor: "pointer", letterSpacing: "1px" }}>
                   {q}
                 </button>
               ))}
@@ -1000,7 +1000,7 @@ export default function ForexDashboard() {
               <div style={{ background: "#070d16", border: "1px solid #00e87a18", borderLeft: "3px solid #00e87a", borderRadius: "0 3px 3px 0", padding: "16px" }}>
                 <div style={{ fontSize: "15px", color: "#00e87a", letterSpacing: "2px", marginBottom: "9px" }}>◆ AI ANALIZA · PMI + LABOR + CYCLE · 12. OŽUJKA 2026.</div>
                 {aiLoading
-                  ? <div style={{ color: "#1e3a55", fontSize: "17px" }}>Analiziram PMI, tržište rada, ekonomske cikluse i geopolitiku... <span style={{ animation: "blink 1s infinite" }}>█</span></div>
+                  ? <div style={{ color: "#5a8aaa", fontSize: "17px" }}>Analiziram PMI, tržište rada, ekonomske cikluse i geopolitiku... <span style={{ animation: "blink 1s infinite" }}>█</span></div>
                   : <div style={{ color: "#a8c8e0", fontSize: "15px", lineHeight: "1.8", whiteSpace: "pre-wrap" }}>{aiResponse}</div>}
               </div>
             )}
