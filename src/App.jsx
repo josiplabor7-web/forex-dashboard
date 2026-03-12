@@ -370,6 +370,36 @@ Format (UVIJEK HRVATSKI):
 
 Budi koncizan i direktan. Koristi podatke, ne filozofiju.`;
 
+// ═══════════════════════════════════════════════════════════════
+// NEWS SYSTEM PROMPT — Claude traži vijesti i vraća JSON impact
+// ═══════════════════════════════════════════════════════════════
+const NEWS_SYSTEM_PROMPT = `Ti si forex geopolitički analitičar. Pretraži web za ZADNJE vijesti (zadnjih 24-48 sati) o:
+1. Iran-US-Izrael konflikt i nafta
+2. Fed, ECB, BoE, BoJ, RBA, BoC odluke ili govori
+3. Globalna geopolitika koja utječe na forex
+4. Inflacija, PMI ili labor market podaci
+
+OBAVEZNO vrati odgovor ISKLJUČIVO u JSON formatu, bez ikakvog teksta izvan JSON-a:
+{
+  "news": [
+    {
+      "headline": "kratki naslov vijesti",
+      "summary": "2-3 rečenice o vijesti",
+      "impact": "bullish" | "bearish" | "neutral",
+      "currencies_up": ["USD", "JPY"],
+      "currencies_down": ["EUR", "GBP"],
+      "severity": "critical" | "high" | "medium" | "low",
+      "score_adjustments": {"USD": 5, "EUR": -3, "JPY": 8},
+      "source_hint": "npr. Reuters, Bloomberg, Fed statement"
+    }
+  ],
+  "overall_sentiment": "risk_on" | "risk_off" | "neutral",
+  "key_theme": "jedna rečenica o dominantnoj temi dana",
+  "last_updated": "trenutno vrijeme HH:MM"
+}
+
+Vrati maksimalno 6 najvažnijih vijesti. score_adjustments su od -15 do +15.`;
+
 export default function ForexDashboard() {
   const [scores, setScores] = useState({});
   const [activeTab, setActiveTab] = useState("overview");
@@ -377,11 +407,68 @@ export default function ForexDashboard() {
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [newsItems, setNewsItems] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsLastFetch, setNewsLastFetch] = useState(null);
+  const [liveAdjustments, setLiveAdjustments] = useState({});
+  const [newsAnalysis, setNewsAnalysis] = useState(null);
 
   useEffect(() => {
     const c = {};
     CURRENCIES.forEach(cur => { c[cur] = computeCurrencyScore(cur); });
     setScores(c);
+  }, []);
+
+  // Fetch live news i score adjustments
+  const fetchLiveNews = useCallback(async () => {
+    setNewsLoading(true);
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000,
+          system: NEWS_SYSTEM_PROMPT,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
+          messages: [{ role: "user", content: `Pretraži web za zadnje forex vijesti danas ${new Date().toLocaleDateString('hr-HR')} i vrati JSON s analizom utjecaja na valute. Fokus: Iran, CB govori, geopolitika, macro podaci.` }],
+        }),
+      });
+      const data = await res.json();
+      // Extract text from response (may have tool_use blocks)
+      const textBlock = data.content?.find(b => b.type === "text");
+      if (textBlock?.text) {
+        const raw = textBlock.text.replace(/```json|```/g, "").trim();
+        // Find JSON in response
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          setNewsItems(parsed.news || []);
+          setNewsAnalysis(parsed);
+          setNewsLastFetch(new Date());
+          // Apply score adjustments
+          const adj = {};
+          (parsed.news || []).forEach(item => {
+            if (item.score_adjustments) {
+              Object.entries(item.score_adjustments).forEach(([cur, val]) => {
+                adj[cur] = (adj[cur] || 0) + val;
+              });
+            }
+          });
+          setLiveAdjustments(adj);
+          // Update scores with adjustments
+          const c = {};
+          CURRENCIES.forEach(cur => {
+            const base = computeCurrencyScore(cur);
+            c[cur] = Math.max(8, Math.min(95, base + (adj[cur] || 0)));
+          });
+          setScores(c);
+        }
+      }
+    } catch (e) {
+      console.error("News fetch error:", e);
+    }
+    setNewsLoading(false);
   }, []);
 
   const askAI = useCallback(async (question) => {
@@ -424,7 +511,7 @@ export default function ForexDashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#00e87a", boxShadow: "0 0 10px #00e87a", animation: "pulse 2s infinite" }} />
           <span style={{ color: "#00e87a", fontSize: "10px", letterSpacing: "3px", fontWeight: "bold" }}>FOREX MACRO INTELLIGENCE</span>
-          <span style={{ color: "#1a3a55", fontSize: "8px" }}>v3.0 · PMI + LABOR + CYCLE</span>
+          <span style={{ color: "#1a3a55", fontSize: "8px" }}>v4.0 · LIVE NEWS + PMI + LABOR + CYCLE</span>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ color: "#ff7733", fontSize: "8px", letterSpacing: "1px" }}>⚠ IRAN RAT · NFP -92K · ISM PRICES 70.5</div>
@@ -453,6 +540,7 @@ export default function ForexDashboard() {
           { id: "cycle", label: "EKONOMSKI CIKLUS" },
           { id: "labor", label: "TRŽIŠTE RADA" },
           { id: "pmi", label: "PMI" },
+          { id: "news", label: newsLoading ? "⟳ LIVE NEWS" : newsItems.length > 0 ? `● LIVE NEWS (${newsItems.length})` : "LIVE NEWS" },
           { id: "pairs", label: "PAROVI" },
           { id: "ai", label: "AI ANALIZA" },
         ].map(t => (
@@ -727,6 +815,97 @@ export default function ForexDashboard() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* ═══ LIVE NEWS ═══ */}
+        {activeTab === "news" && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <div>
+                <div style={{ color: "#1a3a55", fontSize: "8px", letterSpacing: "1px" }}>LIVE NEWS — Claude pretražuje web i računa utjecaj na valutne scoreove</div>
+                {newsLastFetch && <div style={{ color: "#1a3a55", fontSize: "8px", marginTop: "2px" }}>Zadnji fetch: {newsLastFetch.toLocaleTimeString('hr-HR')}</div>}
+              </div>
+              <button onClick={fetchLiveNews} disabled={newsLoading} style={{ background: newsLoading ? "#070d16" : "#00e87a18", border: `1px solid ${newsLoading ? "#0c1c2c" : "#00e87a44"}`, borderRadius: "3px", padding: "8px 16px", color: newsLoading ? "#1e3a55" : "#00e87a", fontFamily: "inherit", fontSize: "9px", letterSpacing: "2px", cursor: newsLoading ? "wait" : "pointer" }}>
+                {newsLoading ? "⟳ DOHVAĆAM..." : "↻ OSVJEŽI VIJESTI"}
+              </button>
+            </div>
+
+            {/* Overall sentiment bar */}
+            {newsAnalysis && (
+              <div style={{ background: "#070d16", border: `1px solid ${newsAnalysis.overall_sentiment === "risk_off" ? "#ff444433" : newsAnalysis.overall_sentiment === "risk_on" ? "#00e87a33" : "#1a3a5533"}`, borderRadius: "3px", padding: "12px 14px", marginBottom: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "8px", color: "#1a3a55", letterSpacing: "1px", marginBottom: "3px" }}>TRŽIŠNI SENTIMENT</div>
+                  <div style={{ fontSize: "13px", color: newsAnalysis.overall_sentiment === "risk_off" ? "#ff4444" : newsAnalysis.overall_sentiment === "risk_on" ? "#00e87a" : "#7a9ab0", fontWeight: "bold", letterSpacing: "2px" }}>
+                    {newsAnalysis.overall_sentiment === "risk_off" ? "⚠ RISK OFF" : newsAnalysis.overall_sentiment === "risk_on" ? "▲ RISK ON" : "→ NEUTRALNO"}
+                  </div>
+                  <div style={{ fontSize: "9px", color: "#4a7a90", marginTop: "4px" }}>{newsAnalysis.key_theme}</div>
+                </div>
+                {/* Live adjustments summary */}
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {Object.entries(liveAdjustments).filter(([,v]) => v !== 0).sort((a,b) => b[1]-a[1]).map(([cur, adj]) => (
+                    <div key={cur} style={{ background: adj > 0 ? "#00e87a15" : "#ff444415", border: `1px solid ${adj > 0 ? "#00e87a33" : "#ff444433"}`, borderRadius: "2px", padding: "3px 7px", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", fontWeight: "bold", color: adj > 0 ? "#00e87a" : "#ff4444" }}>{cur}</div>
+                      <div style={{ fontSize: "9px", color: adj > 0 ? "#00e87a" : "#ff4444" }}>{adj > 0 ? "+" : ""}{adj}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* News loading state */}
+            {newsLoading && (
+              <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
+                <div style={{ color: "#00e87a", fontSize: "10px", marginBottom: "8px", animation: "pulse 1s infinite" }}>⟳ Claude pretražuje web za zadnje vijesti...</div>
+                <div style={{ color: "#1a3a55", fontSize: "8px" }}>Tražim: Iran, Fed, ECB, BoJ, geopolitika, macro podaci</div>
+              </div>
+            )}
+
+            {/* No news yet */}
+            {!newsLoading && newsItems.length === 0 && (
+              <div style={{ background: "#070d16", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "40px", textAlign: "center" }}>
+                <div style={{ color: "#0c1c2c", fontSize: "10px", marginBottom: "8px" }}>◆</div>
+                <div style={{ color: "#1a3a55", fontSize: "9px", letterSpacing: "1px", marginBottom: "16px" }}>Pritisni "OSVJEŽI VIJESTI" — Claude će pretražiti web i analizirati utjecaj na valute</div>
+                <button onClick={fetchLiveNews} style={{ background: "#00e87a18", border: "1px solid #00e87a44", borderRadius: "3px", padding: "10px 20px", color: "#00e87a", fontFamily: "inherit", fontSize: "10px", letterSpacing: "2px", cursor: "pointer" }}>
+                  ↻ DOHVATI LIVE VIJESTI
+                </button>
+              </div>
+            )}
+
+            {/* News cards */}
+            {!newsLoading && newsItems.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+                {newsItems.map((item, i) => {
+                  const sc = item.severity === "critical" ? "#ff2244" : item.severity === "high" ? "#ff7733" : item.severity === "medium" ? "#ffcc33" : "#4488aa";
+                  const impactColor = item.impact === "bullish" ? "#00e87a" : item.impact === "bearish" ? "#ff4444" : "#7a9ab0";
+                  return (
+                    <div key={i} style={{ background: "#070d16", border: "1px solid #0c1c2c", borderLeft: `3px solid ${sc}`, borderRadius: "0 3px 3px 0", padding: "13px 14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "6px" }}>
+                        <div style={{ fontSize: "11px", color: "#c0d8e8", fontWeight: "bold", flex: 1 }}>{item.headline}</div>
+                        <div style={{ display: "flex", gap: "5px", flexShrink: 0 }}>
+                          <span style={{ background: sc + "20", border: `1px solid ${sc}40`, borderRadius: "2px", padding: "1px 5px", fontSize: "7px", color: sc, letterSpacing: "1px" }}>{item.severity?.toUpperCase()}</span>
+                          <span style={{ background: impactColor + "18", border: `1px solid ${impactColor}33`, borderRadius: "2px", padding: "1px 5px", fontSize: "7px", color: impactColor, letterSpacing: "1px" }}>{item.impact?.toUpperCase()}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: "9px", color: "#4a7a90", lineHeight: "1.5", marginBottom: "8px" }}>{item.summary}</div>
+                      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", marginBottom: "6px" }}>
+                        {item.currencies_up?.map(c => <span key={c} style={{ background: "#00e87a15", border: "1px solid #00e87a30", borderRadius: "2px", padding: "1px 6px", fontSize: "8px", color: "#00e87a", fontWeight: "bold" }}>↑ {c}</span>)}
+                        {item.currencies_down?.map(c => <span key={c} style={{ background: "#ff444415", border: "1px solid #ff444430", borderRadius: "2px", padding: "1px 6px", fontSize: "8px", color: "#ff4444", fontWeight: "bold" }}>↓ {c}</span>)}
+                      </div>
+                      {item.score_adjustments && Object.keys(item.score_adjustments).length > 0 && (
+                        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                          <span style={{ fontSize: "7px", color: "#1a3a55", alignSelf: "center" }}>SCORE ADJ:</span>
+                          {Object.entries(item.score_adjustments).map(([cur, adj]) => (
+                            <span key={cur} style={{ fontSize: "8px", color: adj > 0 ? "#00e87a" : "#ff4444" }}>{cur} {adj > 0 ? "+" : ""}{adj}</span>
+                          ))}
+                        </div>
+                      )}
+                      {item.source_hint && <div style={{ fontSize: "7px", color: "#1a3a55", marginTop: "5px" }}>Izvor: {item.source_hint}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
