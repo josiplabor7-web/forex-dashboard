@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-// ═══════════════════════════════════════════════════════════════
-// FOREX MACRO INTELLIGENCE v5.0
-// AUTO-REFRESH: CB kamatne stope + geopolitika pri svakom otvaranju
-// ═══════════════════════════════════════════════════════════════
-
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "NZD"];
 
 const MACRO_CONTEXT = {
@@ -118,8 +113,8 @@ OBAVEZNO vrati ISKLJUČIVO JSON, bez ikakvog teksta izvan JSON-a:
 }
 
 cb_updates: SAMO ako je bilo STVARNIH promjena u zadnjih 72h. Ako nije bilo promjena, vrati prazni array [].
-geo_events: maksimalno 5 novih događaja koji NISU već u bazi.
-Ako nema novih vijesti, vrati prazne arraye.`;
+geo_events: maksimalno 5 novih događaja. Ako nema novih, vrati [].
+score_adjustments: od -15 do +15. Ako nema promjena, vrati {}.`;
 
 const SYSTEM_PROMPT = `Ti si senior forex analitičar (20 god iskustva). Koristiš AKTUALNE live podatke.
 Format (UVIJEK HRVATSKI):
@@ -222,7 +217,18 @@ export default function ForexDashboard() {
   const [autoRefreshTime, setAutoRefreshTime] = useState("");
   const [cbUpdates, setCbUpdates] = useState([]);
 
-  useEffect(() => { autoRefresh(); }, []);
+  // Inicijalni statički scoreovi odmah
+  useEffect(() => {
+    const c = {};
+    CURRENCIES.forEach(cur => { c[cur] = computeCurrencyScore(cur); });
+    setScores(c);
+  }, []);
+
+  // Auto-refresh s odgodom od 3 sekunde da ne udari rate limit odmah
+  useEffect(() => {
+    const timer = setTimeout(() => autoRefresh(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const autoRefresh = async () => {
     setAutoRefreshStatus("loading");
@@ -238,6 +244,14 @@ export default function ForexDashboard() {
           messages: [{ role: "user", content: `Danas je ${new Date().toLocaleDateString('hr-HR')}. Pretraži web za zadnje CB odluke i geopolitičke vijesti u zadnjih 72h. Vrati JSON.` }],
         }),
       });
+
+      if (res.status === 429) {
+        // Rate limit — čekaj i pokušaj opet za 30 sekundi
+        setAutoRefreshStatus("error");
+        setTimeout(() => autoRefresh(), 30000);
+        return;
+      }
+
       const data = await res.json();
       const textBlock = data.content?.find(b => b.type === "text");
       if (textBlock?.text) {
@@ -273,9 +287,6 @@ export default function ForexDashboard() {
       throw new Error("No valid response");
     } catch (e) {
       console.error("Auto-refresh error:", e);
-      const c = {};
-      CURRENCIES.forEach(cur => { c[cur] = computeCurrencyScore(cur); });
-      setScores(c);
       setAutoRefreshStatus("error");
     }
   };
@@ -334,7 +345,6 @@ export default function ForexDashboard() {
 
   const getLiveM = (currency) => liveContext?.[currency] ? { ...MACRO_CONTEXT[currency], ...liveContext[currency] } : MACRO_CONTEXT[currency];
   const sorted = [...CURRENCIES].sort((a, b) => (scores[b] || 50) - (scores[a] || 50));
-
   const statusColor = autoRefreshStatus === "loading" ? "#ffaa22" : autoRefreshStatus === "done" ? "#00e87a" : "#ff4444";
 
   return (
@@ -345,11 +355,11 @@ export default function ForexDashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: statusColor, boxShadow: `0 0 10px ${statusColor}`, animation: "pulse 2s infinite" }} />
           <span style={{ color: "#00e87a", fontSize: "22px", letterSpacing: "3px", fontWeight: "bold" }}>FOREX MACRO INTELLIGENCE</span>
-          <span style={{ color: "#5a8aaa", fontSize: "12px" }}>v5.0 · AUTO-REFRESH · LIVE CB + GEO</span>
+          <span style={{ color: "#5a8aaa", fontSize: "12px" }}>v5.1 · AUTO-REFRESH · LIVE CB + GEO</span>
         </div>
         <div style={{ textAlign: "right" }}>
-          {autoRefreshStatus === "loading" && <div style={{ color: "#ffaa22", fontSize: "12px" }}>⟳ Učitavam live CB i geopolitičke podatke...</div>}
-          {autoRefreshStatus === "done" && <div style={{ color: "#00e87a", fontSize: "12px" }}>✓ LIVE · {autoRefreshTime} {autoRefreshSummary && `· ${autoRefreshSummary}`}</div>}
+          {autoRefreshStatus === "loading" && <div style={{ color: "#ffaa22", fontSize: "12px" }}>⟳ Učitavam live podatke... (može trajati 15-30s)</div>}
+          {autoRefreshStatus === "done" && <div style={{ color: "#00e87a", fontSize: "12px" }}>✓ LIVE · {autoRefreshTime}{autoRefreshSummary ? ` · ${autoRefreshSummary}` : ""}</div>}
           {autoRefreshStatus === "error" && <div style={{ color: "#ff8844", fontSize: "12px" }}>⚠ Offline mode — statički podaci</div>}
           <button onClick={autoRefresh} disabled={autoRefreshStatus === "loading"} style={{ marginTop: "4px", background: "none", border: "1px solid #1a3a55", borderRadius: "2px", padding: "2px 8px", color: "#5a8aaa", fontSize: "11px", fontFamily: "inherit", cursor: "pointer" }}>↻ REFRESH</button>
         </div>
@@ -400,12 +410,13 @@ export default function ForexDashboard() {
 
       <div style={{ padding: "22px 28px" }}>
 
-        {/* ═══ OVERVIEW ═══ */}
+        {/* OVERVIEW */}
         {activeTab === "overview" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "12px", marginBottom: "16px" }}>
               SCORE: kamate 18pt + CB ton 15pt + PMI 15pt + labor 12pt + ciklus 10pt + inflacija 8pt + geopolitika 40pt
               {autoRefreshStatus === "done" && <span style={{ color: "#00e87a", marginLeft: "14px" }}>● LIVE · {autoRefreshTime}</span>}
+              {autoRefreshStatus === "loading" && <span style={{ color: "#ffaa22", marginLeft: "14px" }}>⟳ učitavam live podatke...</span>}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "12px" }}>
               {sorted.map((currency, i) => {
@@ -455,7 +466,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ CYCLE ═══ */}
+        {/* CYCLE */}
         {activeTab === "cycle" && (
           <div>
             <div style={{ background: "#040810", border: "1px solid #0c1c2c", borderRadius: "3px", padding: "12px", marginBottom: "16px" }}>
@@ -508,7 +519,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ LABOR ═══ */}
+        {/* LABOR */}
         {activeTab === "labor" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "12px", marginBottom: "14px" }}>COINCIDENT INDICATORS — UR · Wage growth · NFP · Participation</div>
@@ -544,7 +555,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ PMI ═══ */}
+        {/* PMI */}
         {activeTab === "pmi" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "12px", marginBottom: "14px" }}>LEADING INDICATORS — PMI {">"} 50 = ekspanzija · PMI {"<"} 50 = kontrakcija</div>
@@ -576,7 +587,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ LIVE NEWS ═══ */}
+        {/* LIVE NEWS */}
         {activeTab === "news" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
@@ -617,7 +628,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ PAIRS ═══ */}
+        {/* PAIRS */}
         {activeTab === "pairs" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "12px", marginBottom: "14px" }}>KLIKNI PAR → AI ANALIZA S LIVE CB PODACIMA</div>
@@ -659,7 +670,7 @@ export default function ForexDashboard() {
           </div>
         )}
 
-        {/* ═══ AI ═══ */}
+        {/* AI */}
         {activeTab === "ai" && (
           <div>
             <div style={{ color: "#5a8aaa", fontSize: "12px", marginBottom: "12px" }}>AI ANALIZA · LIVE CB + CYCLE FRAMEWORK · {new Date().toLocaleDateString('hr-HR')}</div>
